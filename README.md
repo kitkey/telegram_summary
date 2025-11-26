@@ -14,7 +14,7 @@
    PORT=8000
    API_ID=<ваш id>  (без кавычек)
    API_HASH=<ваш hash>
-   PHONE_NUMBER=+7... 
+   PHONE_NUMBER= <+7... >
    ```
 
 3. **Поднимите докер**

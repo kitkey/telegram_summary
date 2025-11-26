@@ -7,7 +7,7 @@ from fastapi import FastAPI, Body
 
 from telethon import TelegramClient
 from telethon.sessions import MemorySession
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, GenerationConfig, AutoModelForSeq2SeqLM, pipeline
 
 from chat_processing import create_dialog_branches
 
@@ -20,7 +20,7 @@ SESSION_CONST = {
         'app_version': "1.0.0"
 }
 DEVICE = "cpu"
-SUM_MODEL_NAME = 'Kirili4ik/mbart_ruDialogSum'
+SUM_MODEL_NAME = 'PavelY/ru-mbart-sum'
 
 
 client = TelegramClient(**SESSION_CONST)
@@ -28,14 +28,21 @@ client = TelegramClient(**SESSION_CONST)
 sim_tokenizer = AutoTokenizer.from_pretrained('Den4ikAI/ruBert-base-qa-ranker')
 sim_model = AutoModelForSequenceClassification.from_pretrained('Den4ikAI/ruBert-base-qa-ranker')
 
+model = AutoModelForSeq2SeqLM.from_pretrained(SUM_MODEL_NAME)
+tokenizer = AutoTokenizer.from_pretrained(SUM_MODEL_NAME)
+
 sum_model = pipeline(
-    'summarization',
-    model='Kirili4ik/mbart_ruDialogSum',
-    tokenizer='Kirili4ik/mbart_ruDialogSum',
-    truncation=True,
-    min_length=0,
-    max_length=1024,
+    "summarization",
+    model=model,
+    tokenizer=tokenizer,
+    generation_config=gen_cfg,
 )
+
+PREFIX = "суммаризуй диалог: "
+
+def summarize(text: str) -> str:
+    out = sum_model(PREFIX + text, truncation=True)
+    return out[0]["summary_text"]
 
 app = FastAPI()
 
@@ -84,7 +91,7 @@ async def get_messages_from_subgroup(
     link_root_msg = f"https://t.me/{group_id}/{subgroup_id}/" if subgroup_id is not None else f"https://t.me/{group_id}/"
 
     for i, dialog in enumerate(message_branches):
-        result = sum_model(dialog[1])
+        result = summarize(dialog[1])
         summarized_branches.append((link_root_msg+dialog[0], result))
 
     return {"response": "ok", "messages": summarized_branches}

@@ -17,6 +17,7 @@ services:
       start_period: 5m
     volumes:
       - ./fastapi/:/home/app/
+
   web:
     build:
       context: streamlit/
@@ -26,4 +27,3 @@ services:
     volumes:
       - ./streamlit/:/home/web/
     restart: unless-stopped
-
