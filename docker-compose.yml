@@ -8,6 +8,8 @@ services:
     env_file: .env
     environment:
       - PORT=${PORT}
+      - HF_HOME=/models/huggingface
+      - CT2_SUM_MODEL_DIR=/models/ru-mbart-sum-ct2
     restart: unless-stopped
     healthcheck:
       test: curl --fail http://localhost:${PORT}/health
@@ -17,6 +19,7 @@ services:
       start_period: 5m
     volumes:
       - ./fastapi/:/home/app/
+      - model_cache:/models
 
   web:
     build:
@@ -27,3 +30,6 @@ services:
     volumes:
       - ./streamlit/:/home/web/
     restart: unless-stopped
+
+volumes:
+  model_cache:

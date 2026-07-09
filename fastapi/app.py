@@ -7,9 +7,10 @@ from fastapi import FastAPI, Body
 
 from telethon import TelegramClient
 from telethon.sessions import MemorySession
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, GenerationConfig, AutoModelForSeq2SeqLM, pipeline
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 from chat_processing import create_dialog_branches
+from summarization import create_summarizer
 
 SESSION_CONST = {
         'session': MemorySession(),
@@ -20,31 +21,22 @@ SESSION_CONST = {
         'app_version': "1.0.0"
 }
 DEVICE = "cpu"
-SUM_MODEL_NAME = 'PavelY/ru-mbart-sum'
 
 
 client = TelegramClient(**SESSION_CONST)
 
 sim_tokenizer = AutoTokenizer.from_pretrained('Den4ikAI/ruBert-base-qa-ranker')
 sim_model = AutoModelForSequenceClassification.from_pretrained('Den4ikAI/ruBert-base-qa-ranker')
-
-model = AutoModelForSeq2SeqLM.from_pretrained(SUM_MODEL_NAME)
-tokenizer = AutoTokenizer.from_pretrained(SUM_MODEL_NAME)
-
-sum_model = pipeline(
-    "summarization",
-    model=model,
-    tokenizer=tokenizer,
-    generation_config=gen_cfg,
-)
-
-PREFIX = "суммаризуй диалог: "
+summarizer = create_summarizer()
 
 def summarize(text: str) -> str:
-    out = sum_model(PREFIX + text, truncation=True)
-    return out[0]["summary_text"]
+    return summarizer.summarize(text)
 
 app = FastAPI()
+
+@app.get('/health')
+async def health():
+    return {"status": "ok"}
 
 @app.on_event("startup")
 async def startup_event():

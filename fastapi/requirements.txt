@@ -5,6 +5,7 @@ pandas==2.2.3
 
 torch==2.7.0
 sentencepiece==0.2.0
-transformers==4.49.0
+transformers==4.57.1
+ctranslate2==4.8.1
 sentence-transformers==3.4.1
 protobuf==3.20.1

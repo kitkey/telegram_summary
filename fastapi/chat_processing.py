@@ -19,7 +19,7 @@ def make_predict(
 
         with torch.inference_mode():
             logits = sim_model(**tokenized).logits
-            probas = sim_model.sigmoid(logits)[0].cpu().detach().numpy()
+            probas = torch.sigmoid(logits)[0].cpu().detach().numpy()
         relevance, _ = probas
         relevances.append(relevance)
 
@@ -51,7 +51,7 @@ def get_message_tree(
         try:
             if (parent is subgroup_id) and i > 0:
                 if len(text.split()) <= 4:
-                    parent = int(data.iloc[i-1, "id"])
+                    parent = int(data.iloc[i - 1]["id"])
                 else:
                     messages_for_rerank = data.iloc[i - 2:i]["text"].tolist()
                     messages_for_rerank.append(false_reply)
